@@ -1,10 +1,21 @@
 
-  import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
 
+const figmaAssetResolver: Plugin = {
+  name: 'figma-asset-resolver',
+  resolveId(source) {
+    if (source.startsWith('figma:asset/')) {
+      const assetPath = source.replace('figma:asset/', '');
+      return path.resolve(__dirname, './src/assets', assetPath);
+    }
+    return null;
+  },
+};
+
   export default defineConfig({
-    plugins: [react()],
+  plugins: [react(), figmaAssetResolver],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -29,6 +40,7 @@
         'figma:asset/b3c912e8910f0204ac51dbf51fe48cac295ca503.png': path.resolve(__dirname, './src/assets/b3c912e8910f0204ac51dbf51fe48cac295ca503.png'),
         'figma:asset/b32c42dab0bd0a10bb0fcbc22cb83a30741b4751.png': path.resolve(__dirname, './src/assets/b32c42dab0bd0a10bb0fcbc22cb83a30741b4751.png'),
         'figma:asset/ab1b4d52cb8164d5105857443bff24d778e89622.png': path.resolve(__dirname, './src/assets/ab1b4d52cb8164d5105857443bff24d778e89622.png'),
+        'figma:asset/ab0f0072e277b289cd99222e445e76c7c079c397.png': path.resolve(__dirname, './src/assets/ab0f0072e277b289cd99222e445e76c7c079c397.png'),
         'figma:asset/ab0f0072e277b289cd99222e445e76c7c079c397.png': path.resolve(__dirname, './src/assets/ab0f0072e277b289cd99222e445e76c7c079c397.png'),
         'figma:asset/a42774e7f6e53202555d120f2b091ca11dc4ad20.png': path.resolve(__dirname, './src/assets/a42774e7f6e53202555d120f2b091ca11dc4ad20.png'),
         'figma:asset/974bb07434a42998351f7055a3514fd27ca377bd.png': path.resolve(__dirname, './src/assets/974bb07434a42998351f7055a3514fd27ca377bd.png'),

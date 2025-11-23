@@ -95,7 +95,7 @@ export default function App() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold text-gray-900">Daily Banner Generator</h1>
-            <p className="text-xs text-gray-500 mt-0.5">Hit Generate or Go Funky. Drag anything. Tweak via Controls.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Hit Generate or Go Funky. Drag to adjust. Tweak via Controls.</p>
           </div>
           <Button 
             variant="outline" 

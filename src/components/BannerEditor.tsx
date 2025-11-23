@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { toast } from 'sonner@2.0.3';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { BannerPreview } from './BannerPreview';
 import { BannerConfig } from '../types/banner';
@@ -589,34 +589,96 @@ export const BannerEditor = forwardRef<BannerEditorHandle, BannerEditorProps & {
     const toastId = toast.loading('Generating high-res export...');
 
     try {
-      const html2canvas = (await import('html2canvas')).default;
+      // Import html-to-image which has better CSS support
+      const { toPng } = await import('html-to-image');
 
-      const canvas = await html2canvas(bannerRef.current, {
-        scale: 2, // High resolution
-        useCORS: true, // Handle cross-origin images
-        allowTaint: false,
-        backgroundColor: null,
-        logging: false,
-        scrollX: 0,
-        scrollY: 0,
-        width: 1584,
-        height: 396,
-        imageTimeout: 15000,
-        onclone: (clonedDoc) => {
-          // Workaround for html2canvas failure with Tailwind v4 oklch() colors
-          // Find all style tags and replace oklch(...) with a safe fallback (black)
-          const styleTags = clonedDoc.querySelectorAll('style');
-          styleTags.forEach(style => {
-            if (style.innerHTML.includes('oklch')) {
-              style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, '#000000');
-            }
-          });
+      const exportWidth = 1584;
+      const exportHeight = 396;
+
+      // Step 1: Temporarily remove scale transform for accurate capture
+      const exportWrapper = document.querySelector('[data-export-wrapper]') as HTMLElement;
+      const originalWrapperTransform = exportWrapper?.style.transform || '';
+      const originalWrapperMarginTop = exportWrapper?.style.marginTop || '';
+      const originalWrapperMarginBottom = exportWrapper?.style.marginBottom || '';
+      const originalWrapperBoxShadow = exportWrapper?.style.boxShadow || '';
+      
+      if (exportWrapper) {
+        exportWrapper.style.transform = 'scale(1)';
+        exportWrapper.style.marginTop = '0';
+        exportWrapper.style.marginBottom = '0';
+        exportWrapper.style.boxShadow = 'none';
+      }
+
+      // Small delay to let the DOM settle after transform change
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Step 2: Capture with html-to-image at 2x for quality
+      const dataUrl = await toPng(bannerRef.current, {
+        quality: 1.0,
+        pixelRatio: 2, // 2x for better quality
+        width: exportWidth,
+        height: exportHeight,
+        cacheBust: true,
+        skipFonts: false,
+        includeQueryParams: true,
+        filter: (node) => {
+          // Filter out the preload div
+          if (node instanceof HTMLElement && node.style.opacity === '0' && node.style.position === 'absolute') {
+            return false;
+          }
+          return true;
+        },
+        style: {
+          // Ensure exact dimensions
+          width: `${exportWidth}px`,
+          height: `${exportHeight}px`,
         }
       });
 
+      // Step 3: Restore original styles
+      if (exportWrapper) {
+        exportWrapper.style.transform = originalWrapperTransform;
+        exportWrapper.style.marginTop = originalWrapperMarginTop;
+        exportWrapper.style.marginBottom = originalWrapperMarginBottom;
+        exportWrapper.style.boxShadow = originalWrapperBoxShadow;
+      }
+
+      // Step 4: Create canvas and resize to exact dimensions
+      const img = new Image();
+      img.src = dataUrl;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = exportWidth;
+      finalCanvas.height = exportHeight;
+      const ctx = finalCanvas.getContext('2d', { alpha: false });
+      
+      if (ctx) {
+        // Draw at exact size (downscale from 2x for anti-aliasing)
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, exportWidth, exportHeight);
+      }
+
+      // Step 5: Generate filename with timestamp
+      const now = new Date();
+      const to2 = (value: number) => value.toString().padStart(2, '0');
+      const timestamp = [
+        now.getFullYear().toString().slice(-2),
+        to2(now.getMonth() + 1),
+        to2(now.getDate()),
+        to2(now.getMinutes()),
+        to2(now.getSeconds()),
+      ].join('');
+
+      // Step 6: Download
       const link = document.createElement('a');
-      link.download = 'daily-banner.png';
-      link.href = canvas.toDataURL('image/png');
+      link.download = `Daily-Banner-${timestamp}.png`;
+      link.href = finalCanvas.toDataURL('image/png', 1.0);
       link.click();
       
       toast.success('Download started!', { id: toastId });
@@ -637,6 +699,7 @@ export const BannerEditor = forwardRef<BannerEditorHandle, BannerEditorProps & {
         className="flex items-center justify-center overflow-visible relative"
       >
         <div 
+          data-export-wrapper
           style={{
             width: '1584px',
             height: '396px',

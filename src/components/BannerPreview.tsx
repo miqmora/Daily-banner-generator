@@ -259,6 +259,7 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
   else assetUrl = ASSETS.images.scribbleBlue; // default/misc
 
   const corsUrl = useCorsUrl(assetUrl);
+  const appliedColor = color || '#FFFFFF';
 
   if (style === 'scratches') {
     return (
@@ -273,8 +274,11 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
          <div className="w-full h-full rotate-[170deg] scale-y-[-1]">
            <div 
             className="absolute left-[55px] top-[23px] w-[1950px] h-[1400px] pointer-events-auto"
+            data-scribble-mask="true"
+            data-scribble-asset={assetUrl}
+            data-scribble-color={appliedColor}
             style={{
-              backgroundColor: color,
+              backgroundColor: appliedColor,
               maskImage: `url('${corsUrl}')`,
               maskSize: 'contain',
               maskPosition: 'center',
@@ -299,8 +303,11 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
       >
          <div 
           className="absolute inset-0 pointer-events-auto"
+          data-scribble-mask="true"
+          data-scribble-asset={assetUrl}
+          data-scribble-color={appliedColor}
           style={{
-            backgroundColor: color,
+            backgroundColor: appliedColor,
             maskImage: `url('${corsUrl}')`,
             maskSize: 'contain',
             maskRepeat: 'no-repeat',
@@ -324,8 +331,11 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
       >
          <div 
           className="absolute inset-0 pointer-events-auto"
+          data-scribble-mask="true"
+          data-scribble-asset={assetUrl}
+          data-scribble-color={appliedColor}
           style={{
-            backgroundColor: color,
+            backgroundColor: appliedColor,
             maskImage: `url('${corsUrl}')`,
             maskSize: 'contain',
             maskRepeat: 'no-repeat',
@@ -349,8 +359,11 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
       >
          <div 
           className="absolute inset-0 pointer-events-auto"
+          data-scribble-mask="true"
+          data-scribble-asset={assetUrl}
+          data-scribble-color={appliedColor}
           style={{
-            backgroundColor: color,
+            backgroundColor: appliedColor,
             maskImage: `url('${corsUrl}')`,
             maskSize: 'contain',
             maskRepeat: 'no-repeat',
@@ -392,8 +405,11 @@ function Scribbles({ style, color, blendMode, opacity, rotation, scale = 1, mirr
     >
       <div 
         className="absolute inset-0 pointer-events-auto"
+        data-scribble-mask="true"
+        data-scribble-asset={assetUrl}
+        data-scribble-color={appliedColor}
         style={{
-          backgroundColor: color,
+          backgroundColor: appliedColor,
           maskImage: `url('${corsUrl}')`,
           maskSize: 'contain',
           maskRepeat: 'no-repeat',
