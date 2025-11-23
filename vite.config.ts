@@ -15,6 +15,7 @@ const figmaAssetResolver: Plugin = {
 };
 
   export default defineConfig({
+  base: '/Daily-banner-generator/',
   plugins: [react(), figmaAssetResolver],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
@@ -93,7 +94,7 @@ const figmaAssetResolver: Plugin = {
     },
     build: {
       target: 'esnext',
-      outDir: 'build',
+      outDir: 'dist',
     },
     server: {
       port: 3000,
